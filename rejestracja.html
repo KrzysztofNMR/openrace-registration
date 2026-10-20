@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zapisy - Bieg Charytatywny</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f9fafb; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { max-width: 400px; width: 100%; margin: 20px; padding: 30px; background-color: #fff; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid #f3f4f6; }
+        h2 { font-size: 24px; font-weight: bold; margin-bottom: 8px; text-align: center; color: #111827; }
+        p { font-size: 14px; text-align: center; color: #059669; font-weight: 600; margin-top: 0; margin-bottom: 24px; }
+        form { display: flex; flex-direction: column; gap: 16px; }
+        input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        .cegielka-box { padding: 16px; background-color: #ecfdf5; border-radius: 8px; border: 1px solid #d1fae5; }
+        .cegielka-label { display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; color: #065f46; }
+        input[type=range] { width: 100%; margin-top: 10px; accent-color: #059669; }
+        button { width: 100%; padding: 14px; background-color: #059669; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        button:hover { background-color: #047857; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Rejestracja - Bieg Czos</h2>
+    <p>✨ Projekt Charytatywny OpenRace ✨</p>
+    
+    <form id="regForm">
+        <input type="text" id="imie" placeholder="Imię" required>
+        <input type="text" id="nazwisko" placeholder="Nazwisko" required>
+        <input type="email" id="email" placeholder="E-mail" required>
+        
+        <div class="cegielka-box">
+            <div class="cegielka-label">
+                <span>Cegiełka wsparcia:</span>
+                <span id="sliderValue">30 PLN</span>
+            </div>
+            <input type="range" id="darowizna" min="10" max="200" value="30" oninput="document.getElementById('sliderValue').innerText = this.value + ' PLN'">
+        </div>
+        
+        <button type="submit" id="submitBtn">Zapisz się 🏃‍♂️</button>
+    </form>
+</div>
+
+<script>
+    // Twoje zautomatyzowane połączenie z bazą Supabase
+    const SUPABASE_URL = "https://supabase.co"; 
+    const SUPABASE_ANON_KEY = "sb_publ1shable_s0ccre1bSQGND5VEYGSEvA_f0usk";
+
+    document.getElementById('regForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.innerText = "Zapisywanie...";
+        btn.disabled = true;
+
+        const data = {
+            imie: document.getElementById('imie').value,
+            nazwisko: document.getElementById('nazwisko').value,
+            email: document.getElementById('email').value,
+            kwota_cegielki: parseInt(document.getElementById('darowizna').value),
+            status_platnosci: 'OCZEKUJACY'
+        };
+
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/uczestnicy_biegu`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert("🎉 Sukces! Dane wpadły bezpośrednio do bazy Supabase!");
+                document.getElementById('regForm').reset();
+                document.getElementById('sliderValue').innerText = "30 PLN";
+            } else {
+                alert("Wystąpił problem z zapisem do bazy.");
+            }
+        } catch (error) {
+            alert("Błąd połączenia sieciowego.");
+        } finally {
+            btn.innerText = "Zapisz się 🏃‍♂️";
+            btn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
